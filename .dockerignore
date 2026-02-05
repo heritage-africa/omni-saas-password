@@ -1,0 +1,42 @@
+# Node modules (they will be installed inside the image)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular build outputs
+dist/
+browser/
+server/
+
+# Environment files (optional)
+*.env
+*.local
+
+# IDE / Editor folders
+.vscode/
+.idea/
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git & CI
+.git/
+.gitignore
+.gitlab-ci.yml
+.github/
+
+.git
+.gitignore
+.gitlab-ci.yml
+.github/workflows
+coverage
+.idea
+.vscode
+*.md
+
+# Docker
+docker-compose.*.yaml
+dockerfile.base
+Dockerfile
