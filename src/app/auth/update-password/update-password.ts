@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SecurityService } from '../../services/security.service';
+import { AuthService } from '../../services/auth';
+
 
 @Component({
   selector: 'app-update-password',
@@ -10,20 +12,39 @@ import { SecurityService } from '../../services/security.service';
   templateUrl: './update-password.html',
   styleUrl: './update-password.css',
 })
-export class UpdatePassword {
+export class UpdatePassword implements OnInit {
   form: FormGroup;
   submitted = false;
   successMessage = '';
+  error = '';
   loading = false;
+  // L'email est séparé du reste du formulaire car il est fixe
+  userEmail: string = '';
 
-  constructor(private fb: FormBuilder, private securityService: SecurityService) {
+  constructor(
+    private fb: FormBuilder,
+    private securityService: SecurityService,
+    private authService: AuthService
+  ) {
     this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
       oldPassword: ['', [Validators.required]],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordsMatch });
   }
+
+
+  ngOnInit(): void {
+    // 1. On récupère l'email dès le chargement de la page
+    this.userEmail = this.authService.getUserEmail();
+
+    // Sécurité : Si pas d'email (bug session), on redirige ou on alerte
+    if (!this.userEmail) {
+      this.error = "Impossible d'identifier l'utilisateur. Veuillez vous reconnecter.";
+    }
+  }
+
+
 
   private passwordsMatch(group: FormGroup | any) {
     const newP = group.get('newPassword')?.value;
@@ -42,20 +63,23 @@ export class UpdatePassword {
 
   onSubmit() {
     this.submitted = true;
-    if (this.form.invalid) return;
+    if (this.form.invalid || !this.userEmail) return;
 
     this.loading = true;
-    const payload = this.form.value;
+    const payload = {
+      ...this.form.value,
+      email: this.userEmail
+    };
 
     this.securityService.updatePassword(payload).subscribe({
       next: (response) => {
         this.loading = false;
-        this.successMessage = response.message || `Mot de passe mis à jour pour ${payload.email} ✅`;
+        this.successMessage = response.message || `Mot de passe mis à jour pour ${this.userEmail} ✅`;
         this.reset();
       },
       error: (error) => {
         this.loading = false;
-        this.successMessage = 'Erreur lors de la mise à jour du mot de passe ❌';
+        this.error = 'Erreur lors de la mise à jour du mot de passe ❌';
         console.error(error);
       }
     });
