@@ -17,7 +17,7 @@ export class ForgotPassword {
   message = '';
   error = '';
 
-  constructor(private securityService: SecurityService) {}
+  constructor(private readonly securityService: SecurityService) {}
 
   onSubmit() {
     this.isLoading = true;
@@ -33,9 +33,8 @@ export class ForgotPassword {
       error: (err) => {
         this.isLoading = false;
         // En cas d'erreur réseau ou serveur
-        this.error = "Une erreur technique est survenue. Veuillez réessayer plus tard.";
-      }
+        this.error = 'Une erreur technique est survenue. Veuillez réessayer plus tard.';
+      },
     });
   }
-
 }
