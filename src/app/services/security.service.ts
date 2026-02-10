@@ -17,8 +17,8 @@ export interface PasswordUpdateResponse {
 }
 
 // Adaptez l'URL selon votre environnement (dev/prod)
-const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
-//const API_URL = 'http://localhost:8080/api/v1/security';
+//const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
+const API_URL = 'http://localhost:8080/api/v1/security';
 
 @Injectable({
   providedIn: 'root'
@@ -143,4 +143,22 @@ export class SecurityService {
 
     return password.split('').sort(() => Math.random() - 0.5).join('');
   }
+
+
+  // Appelle l'endpoint /forgot-password
+  requestReset(email: string): Observable<any> {
+    return this.http.post(`${API_URL}/forgot-password`, {
+      email: email
+    });
+  }
+
+  // Appelle l'endpoint /reset-password
+  submitReset(token: string, newPass: string, confirmPass: string): Observable<any> {
+    return this.http.post(`${API_URL}/reset-password`, {
+      token: token,
+      newPassword: newPass,
+      confirmPassword: confirmPass
+    });
+  }
+
 }
