@@ -17,8 +17,8 @@ export interface PasswordUpdateResponse {
 }
 
 // Adaptez l'URL selon votre environnement (dev/prod)
-//const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
-const API_URL = 'http://localhost:8080/api/v1/security';
+const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
+//const API_URL = 'http://localhost:8080/api/v1/security';
 
 @Injectable({
   providedIn: 'root'
