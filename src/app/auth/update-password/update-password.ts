@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SecurityService } from '../../services/security.service';
-import { AuthService } from '../../services/auth';
 
 
 @Component({
@@ -23,8 +22,7 @@ export class UpdatePassword implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private securityService: SecurityService,
-    private authService: AuthService
+    private securityService: SecurityService
   ) {
     this.form = this.fb.group({
       oldPassword: ['', [Validators.required]],
@@ -35,13 +33,7 @@ export class UpdatePassword implements OnInit {
 
 
   ngOnInit(): void {
-    // 1. On récupère l'email dès le chargement de la page
-    this.userEmail = this.authService.getUserEmail();
 
-    // Sécurité : Si pas d'email (bug session), on redirige ou on alerte
-    if (!this.userEmail) {
-      this.error = "Impossible d'identifier l'utilisateur. Veuillez vous reconnecter.";
-    }
   }
 
 
