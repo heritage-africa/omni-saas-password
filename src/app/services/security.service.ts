@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -16,16 +17,56 @@ export interface PasswordUpdateResponse {
   timestamp: string;
 }
 
-// Adaptez l'URL selon votre environnement (dev/prod)
-//const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
-const API_URL = 'http://localhost:8080/api/v1/security';
-
 @Injectable({
   providedIn: 'root'
 })
 export class SecurityService {
+  private apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.apiUrl = this.getApiUrl();
+    //console.log('[SecurityService] API URL:', this.apiUrl);
+  }
+
+  /**
+   * Détermine l'URL API en fonction de l'environnement
+   * Compatible avec SSR (Server-Side Rendering)
+   */
+  private getApiUrl(): string {
+    // Vérifier si on est côté client (browser) ou côté serveur (SSR)
+    if (isPlatformBrowser(this.platformId)) {
+      // Code côté CLIENT (browser)
+      const hostname = window.location.hostname;
+      const port = window.location.port;
+
+      // Si on est en local DEV (ex: ng serve sur 4200), utiliser des URLs relatives
+      // pour permettre au dev-server de proxyer /api vers le backend et éviter
+      // des redirections vers :8080 lors d'un refresh.
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '0.0.0.0'
+      ) {
+        // Si on est sur le port de production (8080), utiliser l'URL absolue
+        if (port === '8080') {
+          return 'http://localhost:8080/api/v1/security';
+        }
+
+        // Par défaut (ex: ng serve:4200) utiliser une URL relative
+        return '/api/v1/security';
+      }
+
+      // Si on est sur un domaine OpenShift ou production
+      return '/api/v1/security';
+    } else {
+      // Code côté SERVEUR (SSR / Node.js)
+      // En SSR, on utilise une URL relative qui sera résolue côté client
+      return '/api/v1/security';
+    }
+  }
 
   /**
    * Évalue la force d'un mot de passe
@@ -83,7 +124,7 @@ export class SecurityService {
    * Appelle /sync-password avec Rollback
    */
   updatePassword(request: PasswordUpdateRequest): Observable<PasswordUpdateResponse> {
-    return this.http.post<PasswordUpdateResponse>(`${API_URL}/sync-password`, {
+    return this.http.post<PasswordUpdateResponse>(`${this.apiUrl}/sync-password`, {
       email: request.email,
       oldPassword: request.oldPassword,
       newPassword: request.newPassword,
@@ -101,7 +142,7 @@ export class SecurityService {
    * Appelle /forgot-password
    */
   requestPasswordReset(emailPro: string): Observable<any> {
-    return this.http.post(`${API_URL}/forgot-password`, {
+    return this.http.post(`${this.apiUrl}/forgot-password`, {
       email: emailPro
     });
   }
@@ -111,7 +152,7 @@ export class SecurityService {
    * Appelle /reset-password
    */
   submitResetPassword(token: string, newPass: string, confirmPass: string): Observable<any> {
-    return this.http.post(`${API_URL}/reset-password`, {
+    return this.http.post(`${this.apiUrl}/reset-password`, {
       token: token,
       newPassword: newPass,
       confirmPassword: confirmPass
@@ -147,14 +188,14 @@ export class SecurityService {
 
   // Appelle l'endpoint /forgot-password
   requestReset(email: string): Observable<any> {
-    return this.http.post(`${API_URL}/forgot-password`, {
+    return this.http.post(`${this.apiUrl}/forgot-password`, {
       email: email
     });
   }
 
   // Appelle l'endpoint /reset-password
   submitReset(token: string, newPass: string, confirmPass: string): Observable<any> {
-    return this.http.post(`${API_URL}/reset-password`, {
+    return this.http.post(`${this.apiUrl}/reset-password`, {
       token: token,
       newPassword: newPass,
       confirmPassword: confirmPass
