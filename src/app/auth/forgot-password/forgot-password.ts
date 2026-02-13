@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { SecurityService } from '../../services/security.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-forgot-password',
@@ -24,17 +25,16 @@ export class ForgotPassword {
     this.message = '';
     this.error = '';
 
-    this.securityService.requestReset(this.email).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        // Affiche le message de succès retourné par Java
-        this.message = res.message;
-      },
-      error: (err) => {
-        this.isLoading = false;
-        // En cas d'erreur réseau ou serveur
-        this.error = 'Une erreur technique est survenue. Veuillez réessayer plus tard.';
-      },
-    });
+    this.securityService
+      .requestReset(this.email)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          this.message = res.message;
+        },
+        error: (err) => {
+          this.error = 'Une erreur technique est survenue. Veuillez réessayer plus tard.';
+        },
+      });
   }
 }
