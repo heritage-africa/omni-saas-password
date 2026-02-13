@@ -17,6 +17,7 @@ export class ForgotPassword {
   isLoading = false;
   message = '';
   error = '';
+  showToast = false;
 
   constructor(private readonly securityService: SecurityService) {}
 
@@ -31,6 +32,10 @@ export class ForgotPassword {
       .subscribe({
         next: (res) => {
           this.message = res.message;
+          this.showToast = true;
+          setTimeout(() => {
+            this.showToast = false;
+          }, 10000);
         },
         error: (err) => {
           this.error = 'Une erreur technique est survenue. Veuillez réessayer plus tard.';
