@@ -1,10 +1,12 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { SecurityService } from '../../services/security.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-forgot-password',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.css',
@@ -14,27 +16,47 @@ export class ForgotPassword {
 
   email = '';
   isLoading = false;
-  message = '';
+
+  // On sépare les données
+  maskedEmail: string | null = null; // Contiendra "bam****@gmail.com"
+  successMessage: string | null = null; // Contiendra un message texte simple (fallback)
   error = '';
 
-  constructor(private readonly securityService: SecurityService) {}
+  constructor(
+    private readonly securityService: SecurityService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   onSubmit() {
+    if (!this.email) return;
+
+    // Reset des états
     this.isLoading = true;
-    this.message = '';
+    this.maskedEmail = null;
+    this.successMessage = null;
     this.error = '';
 
-    this.securityService.requestReset(this.email).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        // Affiche le message de succès retourné par Java
-        this.message = res.message;
-      },
-      error: (err) => {
-        this.isLoading = false;
-        // En cas d'erreur réseau ou serveur
-        this.error = 'Une erreur technique est survenue. Veuillez réessayer plus tard.';
-      },
-    });
+    this.securityService.requestReset(this.email)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (res: any) => {
+          console.log("Réponse:", res);
+          if (res.success === true && res.maskedEmail) {
+            this.maskedEmail = res.maskedEmail;
+          } else {
+            // Cas rare : Succès mais sans email renvoyé
+            this.successMessage = res.message || "Lien envoyé avec succès.";
+          }
+        },
+        error: (err) => {
+          console.error("Erreur:", err);
+          this.error = "Une erreur technique est survenue. Veuillez réessayer.";
+        },
+      });
   }
 }
