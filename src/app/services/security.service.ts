@@ -25,13 +25,13 @@ export interface PasswordUpdateResponse {
 // }
 
 export interface ForgotPasswordResponse {
-  success: boolean;      // ✅ Ajouté selon votre JSON
+  success: boolean;      //Ajouté selon votre JSON
   message: string;
-  maskedEmail?: string;  // ✅ Le champ clé pour l'affichage
+  maskedEmail?: string;  //Le champ clé pour l'affichage
 }
 
 // Configuration de l'API (Décommentez la ligne de prod lors du déploiement)
-// const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
+//const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
 const API_URL = 'http://localhost:8080/api/v1/security';
 
 @Injectable({
