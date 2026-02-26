@@ -135,7 +135,19 @@ export class UpdatePassword implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = error.error?.message || 'Erreur technique lors de la mise à jour.';
+        const msg = error.error?.message || 'Erreur technique lors de la mise à jour.';
+
+        // Validation spécifique pour l'ancien mot de passe
+        const oldPasswordErrors = ['old password', 'ancien mot de passe', 'mot de passe actuel', 'actuel mot de passe', 'bad credentials'];
+        const isOldPasswordError = oldPasswordErrors.some(err => msg.toLowerCase().includes(err));
+
+        if (isOldPasswordError) {
+          this.form.controls['oldPassword'].setErrors({ incorrect: true });
+          // Force error visibility
+          this.form.controls['oldPassword'].markAsTouched();
+        } else {
+          this.errorMessage = msg;
+        }
       }
     });
   }

@@ -31,8 +31,8 @@ export interface ForgotPasswordResponse {
 }
 
 // Configuration de l'API (Décommentez la ligne de prod lors du déploiement)
-//const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
-const API_URL = 'http://localhost:8080/api/v1/security';
+const API_URL = 'https://omni365-saas-api.apps.origins.heritage.africa/api/v1/security';
+//const API_URL = 'http://localhost:8080/api/v1/security';
 
 @Injectable({
   providedIn: 'root'
